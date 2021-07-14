@@ -43,16 +43,13 @@ void platform_terminate()
 //returns a free-running 32 bit nanosecond counter which rolls over
 uint32_t platform_ns() 
 {
-    static uint32_t gTimeBase = 0;
-    static uint32_t timestamp;
+    static uint64_t timestamp;
     struct timespec ts;
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    timestamp = ts.tv_sec * 1e9 + ts.tv_nsec;
-    if (gTimeBase == 0)
-        gTimeBase = timestamp;
+    timestamp = ((uint64_t)ts.tv_sec * 1000000000 + ts.tv_nsec);
 
-    return timestamp - gTimeBase;
+    return (uint32_t)timestamp;
 }
 
 //sleep in microseconds
