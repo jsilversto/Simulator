@@ -33,3 +33,16 @@ build
 
 .vscode/settings.json
 .vscode/c_cpp_properties.json
+
+
+# Build files -JWS
+*.o
+
+# Dependencies -JWS
+grbl
+
+# Logs and outputs -JWS
+*.DAT
+*.dat
+*.out
+*.exe
