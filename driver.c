@@ -28,6 +28,8 @@
 
 #include "grbl/hal.h"
 
+#include <stdio.h>
+
 static bool probe_invert;
 static delay_t delay = { .ms = 1, .callback = NULL }; // NOTE: initial ms set to 1 for "resetting" systick timer on startup
 
@@ -63,6 +65,7 @@ inline static void set_step_outputs (axes_signals_t step_outbits_0)
 
     mcu_gpio_set(&gpio[STEP_PORT0], step_outbits_0.mask, AXES_BITMASK);
     mcu_gpio_set(&gpio[STEP_PORT1], step_outbits_1.mask, AXES_BITMASK);
+    printf("set_step_outputs %d %d %d\n", step_outbits_0.x, step_outbits_0.y, step_outbits_0.z);
 }
 
 inline static void set_dir_outputs (axes_signals_t dir_outbits)
@@ -73,6 +76,7 @@ inline static void set_dir_outputs (axes_signals_t dir_outbits)
 static void stepperEnable (axes_signals_t enable)
 {
     mcu_gpio_set(&gpio[STEPPER_ENABLE_PORT], enable.value ^ settings.steppers.enable_invert.mask, AXES_BITMASK);
+    printf("Enable steppers: %d\n", enable.value);
 }
 
 // Starts stepper driver ISR timer and forces a stepper driver interrupt callback
@@ -83,6 +87,7 @@ static void stepperWakeUp (void)
     timer[STEPPER_TIMER].enable = 1;
 
 //    hal.stepper_interrupt_callback();   // start the show
+	printf("stepperWakeUp\n");
 }
 
 // Disables stepper driver interrupts
@@ -110,6 +115,7 @@ static void stepperCyclesPerTick (uint32_t cycles_per_tick)
 // If spindle synchronized motion switch to PID version.
 static void stepperPulseStart (stepper_t *stepper)
 {
+	printf("stepperPulseStart %X %X\n", stepper->dir_outbits.value, stepper->step_outbits.value);
     if(stepper->new_block) {
         stepper->new_block = false;
         set_dir_outputs(stepper->dir_outbits);
@@ -160,6 +166,7 @@ static void StepperDisableMotors (axes_signals_t axes, squaring_mode_t mode)
 {
     motors_0.mask = (mode == SquaringMode_A || mode == SquaringMode_Both ? axes.mask : 0);
     motors_1.mask = (mode == SquaringMode_B || mode == SquaringMode_Both ? axes.mask : 0);
+    printf("StepperDisableMotors\n");
 }
 
 // Returns limit state as an axes_signals_t variable.
@@ -243,6 +250,7 @@ probe_state_t probeGetState (void)
 static void spindleSetState (spindle_state_t state, float rpm)
 {
     mcu_gpio_set(&gpio[SPINDLE_PORT], state.value ^ settings.spindle.invert.mask, SPINDLE_MASK);
+    printf("spindleSetState\n");
 }
 
 // Variable spindle control functions
@@ -256,6 +264,7 @@ static void spindle_set_speed (uint_fast16_t pwm_value)
 
 static uint_fast16_t spindleGetPWM (float rpm)
 {
+	printf("spindleGetPWM\n");
     return 0; //spindle_compute_pwm_value(&spindle_pwm, rpm, false);
 }
 
@@ -263,6 +272,7 @@ static uint_fast16_t spindleGetPWM (float rpm)
 
 static void spindleUpdateRPM (float rpm)
 {
+	printf("spindleUpdateRPM\n");
 }
 
 #endif
@@ -271,6 +281,7 @@ static void spindleUpdateRPM (float rpm)
 static void spindleSetStateVariable (spindle_state_t state, float rpm)
 { 
     mcu_gpio_set(&gpio[SPINDLE_PORT], state.value ^ settings.spindle.invert.mask, SPINDLE_MASK);
+    printf("spindleSetStateVariable\n");
 }
 
 // Returns spindle state in a spindle_state_t variable
@@ -387,8 +398,8 @@ bool driver_init ()
 
     serialInit();
 
-    hal.info = "Simulator";
-    hal.driver_version = "210628";
+    hal.info = "RPi Waveshare";
+    hal.driver_version = "210714";
     hal.driver_setup = driver_setup;
     hal.rx_buffer_size = RX_BUFFER_SIZE;
     hal.f_step_timer = F_CPU;

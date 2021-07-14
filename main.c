@@ -330,6 +330,7 @@ int main(int argc, char *argv[])
     sim_loop();
 
     // Graceful exit
+    printf("Exiting with grace...\n");
     shutdown_simulator();
 
     platform_kill_thread(th); //need force kill since original main has no return.
