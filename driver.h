@@ -24,6 +24,7 @@
 #define portQ(p) GPIO ## p ## _IRQ
 
 #define STEPPER_TIMER 0
+#define STEP_TIMER    1
 
 #define LIMITS_PORT0 0
 #define LIMITS_IRQ0  portINT(LIMITS_PORT0)

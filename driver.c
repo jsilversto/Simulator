@@ -26,6 +26,8 @@
 #include "grbl_eeprom_extensions.h"
 #include "platform.h"
 
+#include "pistep.h"
+
 #include "grbl/hal.h"
 
 #include <stdio.h>
@@ -35,6 +37,7 @@ static delay_t delay = { .ms = 1, .callback = NULL }; // NOTE: initial ms set to
 
 void SysTick_Handler (void);
 void Stepper_IRQHandler (void);
+void Step_IRQHandler (void);
 void Limits0_IRQHandler (void);
 void Control_IRQHandler (void);
 
@@ -58,6 +61,7 @@ static void driver_delay_ms (uint32_t ms, void (*callback)(void))
 
 inline static void set_step_outputs (axes_signals_t step_outbits_0)
 {
+    printf("set_step_outputs %X\n", step_outbits_0.value);
     axes_signals_t step_outbits_1;
 
     step_outbits_1.mask = (step_outbits_0.mask & motors_1.mask) ^ settings.steppers.step_invert.mask;
@@ -65,7 +69,9 @@ inline static void set_step_outputs (axes_signals_t step_outbits_0)
 
     mcu_gpio_set(&gpio[STEP_PORT0], step_outbits_0.mask, AXES_BITMASK);
     mcu_gpio_set(&gpio[STEP_PORT1], step_outbits_1.mask, AXES_BITMASK);
-    printf("set_step_outputs %d %d %d\n", step_outbits_0.x, step_outbits_0.y, step_outbits_0.z);
+    
+//     pistep_set_state(pistep_step, 0, step_outbits_0.x);
+//     pistep_set_state(pistep_step, 1, step_outbits_0.y);
 }
 
 inline static void set_dir_outputs (axes_signals_t dir_outbits)
@@ -77,6 +83,10 @@ static void stepperEnable (axes_signals_t enable)
 {
     mcu_gpio_set(&gpio[STEPPER_ENABLE_PORT], enable.value ^ settings.steppers.enable_invert.mask, AXES_BITMASK);
     printf("Enable steppers: %d\n", enable.value);
+    
+    // TODO: This should respond to `enable` argument
+	pistep_set_state(pistep_en, 0, Off);
+	pistep_set_state(pistep_en, 1, Off);
 }
 
 // Starts stepper driver ISR timer and forces a stepper driver interrupt callback
@@ -88,6 +98,8 @@ static void stepperWakeUp (void)
 
 //    hal.stepper_interrupt_callback();   // start the show
 	printf("stepperWakeUp\n");
+	pistep_set_state(pistep_en, 0, On);
+	pistep_set_state(pistep_en, 1, On);
 }
 
 // Disables stepper driver interrupts
@@ -123,6 +135,10 @@ static void stepperPulseStart (stepper_t *stepper)
 
     if(stepper->step_outbits.value) {
         set_step_outputs(stepper->step_outbits);
+//      Start STEP_TIMER, which later will clear the step pin
+		timer[STEP_TIMER].load = 5000;
+		timer[STEP_TIMER].value = 0;
+		timer[STEP_TIMER].enable = 1;
     }
 }
 
@@ -321,6 +337,10 @@ bool driver_setup (settings_t *settings)
     timer[STEPPER_TIMER].prescaler = 0;
     timer[STEPPER_TIMER].irq_enable = 1;
     mcu_register_irq_handler(Stepper_IRQHandler, Timer0_IRQ);
+    
+    timer[STEP_TIMER].prescaler = 0;
+    timer[STEP_TIMER].irq_enable = 1;
+    mcu_register_irq_handler(Step_IRQHandler, Timer1_IRQ);
 
     gpio[STEPPER_ENABLE_PORT].dir.mask = AXES_BITMASK;
     gpio[STEP_PORT0].dir.mask = AXES_BITMASK;
@@ -369,6 +389,8 @@ bool driver_init ()
     mcu_reset();
 
     mcu_register_irq_handler(SysTick_Handler, Systick_IRQ);
+    
+    pistep_init();
 
     systick_timer.load = F_CPU / 1000 - 1;
     systick_timer.irq_enable = 1;
@@ -463,7 +485,16 @@ bool driver_init ()
 // Main stepper driver
 void Stepper_IRQHandler (void)
 {
+    printf("Stepper_IRQHandler\n");
     hal.stepper.interrupt_callback();
+}
+
+// Clear step signal on timer expiry
+void Step_IRQHandler (void)
+{
+    printf("Step_IRQHandler\n");
+    set_step_outputs ((axes_signals_t){0});
+	timer[STEP_TIMER].enable = 0;
 }
 
 void Control_IRQHandler (void)

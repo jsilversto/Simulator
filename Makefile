@@ -26,7 +26,7 @@ PLATFORM   = LINUX
 GRBL_BASE_OBJECTS = grbl/grbllib.o grbl/protocol.o grbl/planner.o grbl/settings.o grbl/nuts_bolts.o grbl/stepper.o grbl/gcode.o grbl/spindle_control.o grbl/motion_control.o grbl/limits.o grbl/coolant_control.o grbl/system.o grbl/report.o grbl/state_machine.o grbl/override.o grbl/nvs_buffer.o grbl/sleep.o grbl/tool_change.o grbl/my_plugin.o
 
 # Simulator Only Objects
-SIM_OBJECTS = main.o simulator.o driver.o eeprom.o grbl_eeprom_extensions.o mcu.o serial.o platform_$(PLATFORM).o
+SIM_OBJECTS = main.o simulator.o driver.o eeprom.o grbl_eeprom_extensions.o mcu.o serial.o pistep.o platform_$(PLATFORM).o
 
 GRBL_SIM_OBJECTS = grbl_interface.o  $(GRBL_BASE_OBJECTS) $(SIM_OBJECTS)
 GRBL_VAL_OBJECTS = validator.o validator_driver.o $(GRBL_BASE_OBJECTS)
@@ -36,7 +36,7 @@ SIM_EXE_NAME   = grbl_sim.exe
 VALIDATOR_NAME = gvalidate.exe
 FLAGS = -g -O3
 COMPILE    = $(CC) -Wall $(FLAGS) -DF_CPU=$(CLOCK) -I. -DPLAT_$(PLATFORM)
-LINUX_LIBRARIES = -lrt -pthread
+LINUX_LIBRARIES = -lrt -pthread -lbcm2835
 OSX_LIBRARIES =
 WINDOWS_LIBRARIES =
 
