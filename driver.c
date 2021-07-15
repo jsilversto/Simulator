@@ -126,22 +126,6 @@ static void stepperPulseStart (stepper_t *stepper)
     }
 }
 
-// Delayed pulse version: sets stepper direction and pulse pins and starts a step pulse with an initial delay.
-// If spindle synchronized motion switch to PID version.
-// TODO: only delay after setting dir outputs?
-static void stepperPulseStartDelayed (stepper_t *stepper)
-{
-    if(stepper->new_block) {
-        stepper->new_block = false;
-        set_dir_outputs(stepper->dir_outbits);
-    }
-
-    if(stepper->step_outbits.value) {
-//        next_step_outbits = stepper->step_outbits; // Store out_bits
-//        PULSE_TIMER->CTL |= TIMER_A_CTL_CLR|TIMER_A_CTL_MC1;
-    }
-}
-
 static limit_signals_t limitsGetState()
 {
     limit_signals_t signals = {
@@ -276,13 +260,6 @@ static void spindleUpdateRPM (float rpm)
 }
 
 #endif
-
-// Start or stop spindle
-static void spindleSetStateVariable (spindle_state_t state, float rpm)
-{ 
-    mcu_gpio_set(&gpio[SPINDLE_PORT], state.value ^ settings.spindle.invert.mask, SPINDLE_MASK);
-    printf("spindleSetStateVariable\n");
-}
 
 // Returns spindle state in a spindle_state_t variable
 static spindle_state_t spindleGetState (void)

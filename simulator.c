@@ -145,7 +145,7 @@ void sim_socket_out (uint8_t data)
 {
     static uint8_t buf[128] = {0};
     static uint8_t len = 0;
-    static bool continuation = 0;
+//     static bool continuation = 0;
 
     buf[len++] = data;
     // print when we get to newline or run out of buffer
@@ -157,7 +157,7 @@ void sim_socket_out (uint8_t data)
                 exit(-10);
         }
         // don't print comment on next line if we are just printing to avoid buffer overflow
-        continuation = (len >= 128); 
+//         continuation = (len >= 128); 
         len = 0;
     }
 }
