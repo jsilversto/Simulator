@@ -61,32 +61,22 @@ static void driver_delay_ms (uint32_t ms, void (*callback)(void))
 
 inline static void set_step_outputs (axes_signals_t step_outbits_0)
 {
-    printf("set_step_outputs %X\n", step_outbits_0.value);
-    axes_signals_t step_outbits_1;
-
-    step_outbits_1.mask = (step_outbits_0.mask & motors_1.mask) ^ settings.steppers.step_invert.mask;
-    step_outbits_0.mask = (step_outbits_0.mask & motors_0.mask) ^ settings.steppers.step_invert.mask;
-
-    mcu_gpio_set(&gpio[STEP_PORT0], step_outbits_0.mask, AXES_BITMASK);
-    mcu_gpio_set(&gpio[STEP_PORT1], step_outbits_1.mask, AXES_BITMASK);
-    
-//     pistep_set_state(pistep_step, 0, step_outbits_0.x);
-//     pistep_set_state(pistep_step, 1, step_outbits_0.y);
+    pistep_set_state(pistep_step, 0, step_outbits_0.x);
+    pistep_set_state(pistep_step, 1, step_outbits_0.y);
 }
 
 inline static void set_dir_outputs (axes_signals_t dir_outbits)
 {
     mcu_gpio_set(&gpio[DIR_PORT], dir_outbits.value ^ settings.steppers.dir_invert.mask, AXES_BITMASK);
+    
+    pistep_set_state(pistep_dir, 0, dir_outbits.x);
+    pistep_set_state(pistep_dir, 1, dir_outbits.y);
 }
 
 static void stepperEnable (axes_signals_t enable)
 {
-    mcu_gpio_set(&gpio[STEPPER_ENABLE_PORT], enable.value ^ settings.steppers.enable_invert.mask, AXES_BITMASK);
-    printf("Enable steppers: %d\n", enable.value);
-    
-    // TODO: This should respond to `enable` argument
-	pistep_set_state(pistep_en, 0, Off);
-	pistep_set_state(pistep_en, 1, Off);
+	pistep_set_state(pistep_en, 0, enable.value);
+	pistep_set_state(pistep_en, 1, enable.value);
 }
 
 // Starts stepper driver ISR timer and forces a stepper driver interrupt callback
@@ -96,8 +86,6 @@ static void stepperWakeUp (void)
     timer[STEPPER_TIMER].value = 0;
     timer[STEPPER_TIMER].enable = 1;
 
-//    hal.stepper_interrupt_callback();   // start the show
-	printf("stepperWakeUp\n");
 	pistep_set_state(pistep_en, 0, On);
 	pistep_set_state(pistep_en, 1, On);
 }
@@ -127,7 +115,6 @@ static void stepperCyclesPerTick (uint32_t cycles_per_tick)
 // If spindle synchronized motion switch to PID version.
 static void stepperPulseStart (stepper_t *stepper)
 {
-	printf("stepperPulseStart %X %X\n", stepper->dir_outbits.value, stepper->step_outbits.value);
     if(stepper->new_block) {
         stepper->new_block = false;
         set_dir_outputs(stepper->dir_outbits);
@@ -135,7 +122,7 @@ static void stepperPulseStart (stepper_t *stepper)
 
     if(stepper->step_outbits.value) {
         set_step_outputs(stepper->step_outbits);
-//      Start STEP_TIMER, which later will clear the step pin
+		// Start STEP_TIMER, which later will clear the step pin
 		timer[STEP_TIMER].load = 5000;
 		timer[STEP_TIMER].value = 0;
 		timer[STEP_TIMER].enable = 1;
@@ -166,7 +153,6 @@ static void StepperDisableMotors (axes_signals_t axes, squaring_mode_t mode)
 {
     motors_0.mask = (mode == SquaringMode_A || mode == SquaringMode_Both ? axes.mask : 0);
     motors_1.mask = (mode == SquaringMode_B || mode == SquaringMode_Both ? axes.mask : 0);
-    printf("StepperDisableMotors\n");
 }
 
 // Returns limit state as an axes_signals_t variable.
@@ -485,14 +471,12 @@ bool driver_init ()
 // Main stepper driver
 void Stepper_IRQHandler (void)
 {
-    printf("Stepper_IRQHandler\n");
     hal.stepper.interrupt_callback();
 }
 
 // Clear step signal on timer expiry
 void Step_IRQHandler (void)
 {
-    printf("Step_IRQHandler\n");
     set_step_outputs ((axes_signals_t){0});
 	timer[STEP_TIMER].enable = 0;
 }
