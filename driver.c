@@ -123,7 +123,7 @@ static void stepperPulseStart (stepper_t *stepper)
     if(stepper->step_outbits.value) {
         set_step_outputs(stepper->step_outbits);
 		// Start STEP_TIMER, which later will clear the step pin
-		timer[STEP_TIMER].load = 5000;
+		timer[STEP_TIMER].load = 500;
 		timer[STEP_TIMER].value = 0;
 		timer[STEP_TIMER].enable = 1;
     }
