@@ -32,8 +32,8 @@ GRBL_SIM_OBJECTS = grbl_interface.o  $(GRBL_BASE_OBJECTS) $(SIM_OBJECTS)
 GRBL_VAL_OBJECTS = validator.o validator_driver.o $(GRBL_BASE_OBJECTS)
 
 CLOCK      = 16000000
-SIM_EXE_NAME   = grbl_sim.exe
-VALIDATOR_NAME = gvalidate.exe
+SIM_EXE_NAME   = grbl-pilase
+VALIDATOR_NAME = grbl-validate
 FLAGS = -g -O3
 COMPILE    = $(CC) -Wall $(FLAGS) -DF_CPU=$(CLOCK) -I. -DPLAT_$(PLATFORM)
 LINUX_LIBRARIES = -lrt -pthread -lbcm2835

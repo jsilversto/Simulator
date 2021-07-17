@@ -46,3 +46,7 @@ grbl
 *.dat
 *.out
 *.exe
+
+grbl-pilase
+grbl-validate
+
