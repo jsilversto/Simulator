@@ -28,6 +28,9 @@ GRBL_BASE_OBJECTS = grbl/grbllib.o grbl/protocol.o grbl/planner.o grbl/settings.
 # Simulator Only Objects
 SIM_OBJECTS = main.o simulator.o driver.o eeprom.o grbl_eeprom_extensions.o mcu.o serial.o pistep.o platform_$(PLATFORM).o
 
+# Outputs
+OUTPUT_OBJECTS = EEPROM.DAT *.out
+
 GRBL_SIM_OBJECTS = grbl_interface.o  $(GRBL_BASE_OBJECTS) $(SIM_OBJECTS)
 GRBL_VAL_OBJECTS = validator.o validator_driver.o $(GRBL_BASE_OBJECTS)
 
@@ -46,7 +49,7 @@ all:	main gvalidate
 new: clean main gvalidate
 
 clean:
-	rm -f $(SIM_EXE_NAME) $(GRBL_SIM_OBJECTS) $(VALIDATOR_NAME) $(GRBL_VAL_OBJECTS)
+	rm -f $(SIM_EXE_NAME) $(GRBL_SIM_OBJECTS) $(VALIDATOR_NAME) $(GRBL_VAL_OBJECTS) $(OUTPUT_OBJECTS)
 
 # file targets:
 main: $(GRBL_SIM_OBJECTS) 
