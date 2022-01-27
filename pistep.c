@@ -16,6 +16,9 @@
 #define S1_STEP_PIN 18
 #define S0_DIR_PIN 13
 #define S1_DIR_PIN 24
+#define LASER_TL_PIN 16
+#define LASER_WP_PIN 21
+#define LASER_PWM_PIN 20
 
 static uint8_t en_pins[] = {S0_EN_PIN, S1_EN_PIN};
 static uint8_t step_pins[] = {S0_STEP_PIN, S1_STEP_PIN};
@@ -61,5 +64,29 @@ int pistep_set_state(pistep_signal_t signal, uint8_t stepper_id, uint8_t state)
 			return 1;
 	}
 	
+	return 0;
+}
+
+
+int
+pistep_set_laser_power(float power)
+{
+	if (power < PISTEP_LASER_MIN_POWER)
+	{
+		power = PISTEP_LASER_MIN_POWER;
+	}
+	else
+	if (power > PISTEP_LASER_MAX_POWER)
+	{
+		power = PISTEP_LASER_MAX_POWER;
+	}
+	
+	return 0;
+}
+
+
+int
+pistep_set_laser_enable(unsigned char en)
+{
 	return 0;
 }

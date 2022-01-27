@@ -236,7 +236,10 @@ probe_state_t probeGetState (void)
 static void spindleSetState (spindle_state_t state, float rpm)
 {
     mcu_gpio_set(&gpio[SPINDLE_PORT], state.value ^ settings.spindle.invert.mask, SPINDLE_MASK);
-    printf("spindleSetState\n");
+    printf("spindleSetState rpm %f, state.pwm %i, state.on %i\n", rpm, state.pwm, state.on);
+    
+    pistep_set_laser_enable(state.on);
+    pistep_set_laser_power(rpm);
 }
 
 // Variable spindle control functions
@@ -244,6 +247,8 @@ static void spindleSetState (spindle_state_t state, float rpm)
 // Sets spindle speed
 static void spindle_set_speed (uint_fast16_t pwm_value)
 {
+	printf("spindle_set_speed\n");
+	return;
 }
 
 #ifdef SPINDLE_PWM_DIRECT
