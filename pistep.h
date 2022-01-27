@@ -21,5 +21,7 @@ int pistep_set_state(pistep_signal_t signal, uint8_t stepper_id, uint8_t state);
 int pistep_set_laser_power(float power);
 int pistep_set_laser_enable(unsigned char en);
 
+extern volatile uint16_t pistep_laser_power;
+
 
 #endif

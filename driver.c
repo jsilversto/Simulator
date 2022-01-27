@@ -101,6 +101,8 @@ static void stepperGoIdle (bool clear_signals)
         set_step_outputs((axes_signals_t){0});
         set_dir_outputs((axes_signals_t){0});
     }
+    
+    printf("stepperGoIdle %i\n", clear_signals);
 }
 
 // Sets up stepper driver interrupt timeout, limiting the slowest speed
