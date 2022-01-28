@@ -46,7 +46,7 @@ int pistep_init()
 		bcm2835_gpio_fsel(laser_pins[pin], BCM2835_GPIO_FSEL_OUTP);
 	
 	// Set up water interlock override
-	bcm2835_gpio_write(LASER_WP_PIN, 1);
+	bcm2835_gpio_write(LASER_WP_PIN, 0);
 	
 	return 0;
 }
