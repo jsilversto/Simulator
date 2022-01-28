@@ -85,9 +85,8 @@ static void stepperWakeUp (void)
     timer[STEPPER_TIMER].load = 5000;
     timer[STEPPER_TIMER].value = 0;
     timer[STEPPER_TIMER].enable = 1;
-
-	pistep_set_state(pistep_en, 0, On);
-	pistep_set_state(pistep_en, 1, On);
+    
+	stepperEnable((axes_signals_t){1});
 }
 
 // Disables stepper driver interrupts
@@ -98,11 +97,11 @@ static void stepperGoIdle (bool clear_signals)
     timer[STEPPER_TIMER].enable = 0;
 
     if(clear_signals) {
+		stepperEnable((axes_signals_t){0});
         set_step_outputs((axes_signals_t){0});
         set_dir_outputs((axes_signals_t){0});
     }
     
-    printf("stepperGoIdle %i\n", clear_signals);
 }
 
 // Sets up stepper driver interrupt timeout, limiting the slowest speed
